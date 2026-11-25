@@ -23,8 +23,8 @@ def server_port():
     process = subprocess.Popen(
         [executable, "--port", str(port)],
         env=env,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
         creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
     )
     try:
@@ -55,6 +55,11 @@ def server_port():
             process.wait()
             pytest.fail("server did not stop gracefully")
         assert returncode == 0
+        assert process.stdout is not None
+        output = process.stdout.read().decode("utf-8", errors="replace")
+        assert f"http://127.0.0.1:{port}" in output
+        assert "NULLGATE_API_KEY" in output
+        assert "local-test-key" not in output
 
 
 def request(port, method, path, body=None, headers=None):
@@ -82,7 +87,7 @@ def test_cli_health(server_port):
         ({"Content-Type": "application/json"}, b"{", 400),
         ({"Content-Type": "application/json"}, b"[]", 400),
         ({"Content-Type": "application/json"}, b'{"unknown": true}', 400),
-        ({"Content-Type": "application/json"}, b" " * (1024 * 1024 + 1), 413),
+        ({"Content-Type": "application/json"}, b" " * (8 * 1024 * 1024 + 1), 413),
     ],
 )
 def test_cli_rejects_untrusted_requests(server_port, headers, body, expected_status):

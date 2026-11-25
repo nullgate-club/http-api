@@ -1,24 +1,15 @@
-"""Local HTTP interface for the optional solver."""
+"""Loopback HTTP boundary for the Nullgate solver."""
 
-import argparse
 import json
-import math
-import os
-import signal
-import sys
 from collections.abc import Awaitable, Callable
-from getpass import getpass
-from types import FrameType
-from typing import NoReturn
 from urllib.parse import urlsplit
 from uuid import uuid4
 
 from aiohttp import web
-from nullgate import NullgateError
-from nullgate.solver import Solver
+from nullgate.solver.engine import Engine
 from nullgate.solver.models import SolveError
 
-_MAX_BODY = 1024 * 1024
+_MAX_BODY = 8 * 1024 * 1024
 _STATUS = {
     "invalid_request": 400,
     "session_conflict": 409,
@@ -68,7 +59,7 @@ def _trusted_request(request: web.Request, port: int) -> bool:
         return False
 
 
-def create_app(solver: Solver, port: int) -> web.Application:
+def create_app(solver: Engine, port: int) -> web.Application:
     @web.middleware
     async def boundary(
         request: web.Request,
@@ -91,17 +82,17 @@ def create_app(solver: Solver, port: int) -> web.Application:
             payload = json.loads(body.decode("utf-8"))
         except web.HTTPRequestEntityTooLarge:
             return _error(
-                "invalid_request", "Request body exceeds 1 MiB.", "request", 413
+                "invalid_request", "Request body exceeds 8 MiB.", "request", 413
             )
         except (UnicodeDecodeError, json.JSONDecodeError):
             return _error("invalid_request", "Invalid JSON body.", "request", 400)
         if not isinstance(payload, dict):
             return _error("invalid_request", "Expected a JSON object.", "request", 400)
         try:
-            cookies = await solver.solve(**payload)
+            result = await solver.solve(**payload)
         except SolveError as exc:
-            status = getattr(exc, "status", None)
-            if status not in (401, 402):
+            status = exc.status
+            if status is None or not 400 <= status <= 599:
                 status = _STATUS.get(exc.code, 502)
             error = {
                 "code": exc.code,
@@ -114,7 +105,7 @@ def create_app(solver: Solver, port: int) -> web.Application:
             return web.json_response(error, status=status)
         except Exception:
             return _error("solve_failed", "Solver failed.", "solve", 502)
-        return web.json_response(cookies)
+        return web.json_response(result)
 
     async def close_solver(app: web.Application) -> None:
         await solver.aclose()
@@ -124,46 +115,3 @@ def create_app(solver: Solver, port: int) -> web.Application:
     app.router.add_post("/solve", solve)
     app.on_cleanup.append(close_solver)
     return app
-
-
-def _interrupt(signum: int, frame: FrameType | None) -> NoReturn:
-    raise KeyboardInterrupt
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Run the local Nullgate solver.")
-    parser.add_argument("--port", type=int, default=8191)
-    parser.add_argument("--base-url", default="https://api.nullgate.club")
-    parser.add_argument("--timeout", type=float, default=60)
-    args = parser.parse_args()
-    if not 1 <= args.port <= 65535:
-        parser.error("--port must be between 1 and 65535")
-    if not math.isfinite(args.timeout) or not 0 < args.timeout <= 180:
-        parser.error("--timeout must be positive and at most 180 seconds")
-    api_key = os.environ.get("NULLGATE_API_KEY")
-    if not api_key:
-        try:
-            api_key = getpass("Nullgate API key: ")
-        except (EOFError, KeyboardInterrupt):
-            print("API key is required.", file=sys.stderr)
-            raise SystemExit(1) from None
-    if not api_key:
-        print("API key is required.", file=sys.stderr)
-        raise SystemExit(1)
-    try:
-        solver = Solver(api_key, base_url=args.base_url, timeout=args.timeout)
-    except (SolveError, NullgateError):
-        parser.error("Invalid API key or API URL")
-    if sys.platform == "win32":
-        signal.signal(signal.SIGBREAK, _interrupt)
-    web.run_app(
-        create_app(solver, args.port),
-        host="127.0.0.1",
-        port=args.port,
-        access_log=None,
-        shutdown_timeout=args.timeout + 5,
-    )
-
-
-if __name__ == "__main__":
-    main()

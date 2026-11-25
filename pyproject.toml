@@ -4,17 +4,17 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nullgate-http-api"
-version = "0.1.0"
-description = "Local cookie solver over the Nullgate Python SDK."
+version = "1.0.0"
+description = "Local HTTP API for the Nullgate solver."
 requires-python = ">=3.11,<3.16"
 readme = "README.md"
 dependencies = [
   "aiohttp>=3.12,<4",
-  "nullgate-sdk-py[solver] @ https://github.com/nullgate-club/nullgate-sdk-py/archive/4f2f658d26022e0e7a866665ce5f2ebf064c3098.tar.gz",
+  "nullgate-sdk-py[solver] @ https://github.com/nullgate-club/nullgate-sdk-py/archive/030537d8f330f0de4cdc98ab4b57ba261488531e.tar.gz",
 ]
 
 [project.scripts]
-nullgate-http-api = "nullgate_http_api.server:main"
+nullgate-http-api = "nullgate_http_api.cli:main"
 
 [project.urls]
 Repository = "https://github.com/nullgate-club/http-api"
