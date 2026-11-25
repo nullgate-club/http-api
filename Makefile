@@ -3,18 +3,18 @@
 check: lint typecheck test build
 
 format:
-	uv run ruff format .
-	uv run ruff check --fix .
+	uv run --locked ruff format .
+	uv run --locked ruff check --fix .
 
 lint:
-	uv run ruff format --check .
-	uv run ruff check .
+	uv run --locked ruff format --check .
+	uv run --locked ruff check .
 
 typecheck:
-	uv run mypy
+	uv run --locked mypy
 
 test:
-	uv run pytest
+	uv run --locked pytest
 
 build:
 	uv build

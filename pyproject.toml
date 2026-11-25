@@ -10,7 +10,7 @@ requires-python = ">=3.11,<3.16"
 readme = "README.md"
 dependencies = [
   "aiohttp>=3.12,<4",
-  "nullgate-sdk-py[solver] @ https://github.com/nullgate-club/nullgate-sdk-py/archive/bf920818abc9cbee0b8359f058a81dddbb16b742.tar.gz",
+  "nullgate-sdk-py[solver] @ https://github.com/nullgate-club/nullgate-sdk-py/archive/4f2f658d26022e0e7a866665ce5f2ebf064c3098.tar.gz",
 ]
 
 [project.scripts]

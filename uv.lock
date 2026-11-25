@@ -863,7 +863,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.12,<4" },
-    { name = "nullgate-sdk-py", extras = ["solver"], url = "https://github.com/nullgate-club/nullgate-sdk-py/archive/bf920818abc9cbee0b8359f058a81dddbb16b742.tar.gz" },
+    { name = "nullgate-sdk-py", extras = ["solver"], url = "https://github.com/nullgate-club/nullgate-sdk-py/archive/4f2f658d26022e0e7a866665ce5f2ebf064c3098.tar.gz" },
 ]
 
 [package.metadata.requires-dev]
@@ -876,7 +876,7 @@ dev = [
 [[package]]
 name = "nullgate-sdk-py"
 version = "2.0.0"
-source = { url = "https://github.com/nullgate-club/nullgate-sdk-py/archive/bf920818abc9cbee0b8359f058a81dddbb16b742.tar.gz" }
+source = { url = "https://github.com/nullgate-club/nullgate-sdk-py/archive/4f2f658d26022e0e7a866665ce5f2ebf064c3098.tar.gz" }
 dependencies = [
     { name = "aioice" },
     { name = "beautifulsoup4" },
@@ -884,7 +884,7 @@ dependencies = [
     { name = "python-socks" },
     { name = "websockets" },
 ]
-sdist = { hash = "sha256:534882e1a3a1fea460498f9b28fcaf44654af976f7e95f3166521be6e5a53164" }
+sdist = { hash = "sha256:6b14551c5ef2e7883d021b5980282b6087d7b10b7988a73a7e2e985fa6633cf6" }
 
 [package.optional-dependencies]
 solver = [
