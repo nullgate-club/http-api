@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "nullgate-http-api"
+version = "0.1.0"
+description = "Local cookie solver over the Nullgate Python SDK."
+requires-python = ">=3.11,<3.16"
+readme = "README.md"
+dependencies = [
+  "aiohttp>=3.12,<4",
+  "nullgate-sdk-py[solver] @ https://github.com/nullgate-club/nullgate-sdk-py/archive/bf920818abc9cbee0b8359f058a81dddbb16b742.tar.gz",
+]
+
+[project.scripts]
+nullgate-http-api = "nullgate_http_api.server:main"
+
+[project.urls]
+Repository = "https://github.com/nullgate-club/http-api"
+
+[dependency-groups]
+dev = ["ruff>=0.14", "mypy>=1.19", "pytest>=9"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nullgate_http_api"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+strict = true
+files = ["src/nullgate_http_api"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
